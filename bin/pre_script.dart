@@ -29,6 +29,7 @@ STATE state = STATE.none;
 RegExp re = RegExp(r'// #\[(debug|release)?(?:\[(.*)\])?\]');
 RegExp pathRe = RegExp(r'\[(debug|release)?(?:\[(.*)\])?\]');
 Match ma;
+bool modified = false;
 
 void walkPath(FileSystemEntity path) {
   var stat = path.statSync();
@@ -53,10 +54,12 @@ void walkPath(FileSystemEntity path) {
     // 文件名不带规则，逐行读取后进行处理
     file = File(path.path);
     sb.clear();
+    modified = false;
     try {
       file.readAsLinesSync().forEach((line) {
         ma = re.firstMatch(line);
         if (ma != null) {
+          modified = true;
           mode = ma.group(1);
           flavors = (ma.group(2) ?? '').split(' ').where((ele) => ele.trim() != '').toList();
 
@@ -70,6 +73,8 @@ void walkPath(FileSystemEntity path) {
             // 前一状态为缓存中或缓存结束，此时应该将状态改为替换，用于跳过默认内容
             else if (state == STATE.caching || state == STATE.cached) {
               state = STATE.replace;
+            } else if (state == STATE.notMatch) {
+              state = STATE.none;
             }
           } else {
             // 带有条件的替换代码块
@@ -88,15 +93,18 @@ void walkPath(FileSystemEntity path) {
           }
         } else {
           // none状态时直接将line写入sb
-          if (state == STATE.none)
+          if (state == STATE.none) {
             sb.writeln(line);
+          }
           // 缓存中状态，将用于替换的内容移除注释后写入缓存
           else if (state == STATE.caching) tmp.writeln(line.replaceFirst('// ', ''));
           // 这样就跳过了没有匹配上的替换代码块和默认内容
         }
       });
-      file.renameSync(path.path + '.bak');
-      File(path.path).writeAsStringSync(sb.toString(), flush: true);
+      if (modified) {
+        file.renameSync(path.path + '.bak');
+        File(path.path).writeAsStringSync(sb.toString(), flush: true);
+      }
     } catch (e) {
       if (!(e is FileSystemException)) {
         rethrow;

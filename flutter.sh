@@ -30,7 +30,7 @@ fi
 
 ${DART_EXE} "$SCRIPT_DIR"/bin/pre_script.dart "$@"
 
-#flutter "$@"
+flutter "$@"
 
 ${DART_EXE} "$SCRIPT_DIR"/bin/after_script.dart "$@"
 
