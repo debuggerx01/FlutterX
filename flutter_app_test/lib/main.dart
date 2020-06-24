@@ -53,7 +53,11 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
-            Text('RELEASE'),
+            // #[release]
+            // Text('RELEASE'),
+            // #[[]]
+            Text('DEBUG'),
+            // #[[]]
             Image.asset('images/avatar.png'),
           ],
         ),
