@@ -52,6 +52,12 @@ void walkPath(FileSystemEntity path) {
             // 默认代码块开始
             if (tmp.isNotEmpty) {
               sb.write(tmp);
+              print([
+                "${file!.path} modified",
+                "-" * 80,
+                tmp.toString(),
+                "-" * 80,
+              ].join("\n"));
               state = STATE.replace;
             } else {
               state = STATE.none;
@@ -82,8 +88,8 @@ void walkPath(FileSystemEntity path) {
         }
       });
       if (modified) {
-        // file!.renameSync(path.path + '.bak');
-        // File(path.path).writeAsStringSync(sb.toString(), flush: true);
+        file!.renameSync(path.path + '.bak');
+        File(path.path).writeAsStringSync(sb.toString(), flush: true);
         print(sb.toString());
       }
     } catch (e) {
