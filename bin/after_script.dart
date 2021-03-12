@@ -8,9 +8,5 @@ void main(List<String> arguments) {
       File(p.path.substring(0, p.path.length - 4)).deleteSync();
       p.renameSync(p.path.substring(0, p.path.length - 4));
     }
-    if (p.path.endsWith('.default')) {
-      File(p.path.substring(0, p.path.length - 8)).deleteSync();
-      p.renameSync(p.path.substring(0, p.path.length - 8));
-    }
   });
 }

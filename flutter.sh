@@ -4,7 +4,7 @@ SCRIPT_ABS=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_ABS")
 
 # shellcheck disable=SC2005
-DART_EXE=$(echo "$(command -v flutter)" | awk '{print substr($0,0,length()-7)}')cache/dart-sdk/bin/dart
+DART_EXE=$(command -v dart)
 
 if [[ ! -x "$DART_EXE" ]]; then
   echo "Can't find dart executable file !"
