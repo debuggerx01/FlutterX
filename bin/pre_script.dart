@@ -1,12 +1,7 @@
 import 'dart:io';
 import 'parse_arguments.dart';
 import 'expressions/expressions.dart';
-
-const FLAVORS = [
-  'test',
-  'tw',
-  'cn',
-];
+import 'flavors.dart';
 
 const BLACK_FILE_EXT = [
   'md',
@@ -60,6 +55,7 @@ Match? ma;
 bool modified = false;
 
 const evaluator = const ExpressionEvaluator();
+late List<String> lines;
 
 // vars for replace mode
 int currentLineIndex = 0;
@@ -87,7 +83,8 @@ void walkPath(FileSystemEntity path) {
       currentTempOperations.clear();
     }
     try {
-      file!.readAsLinesSync().forEach((line) {
+      lines = file!.readAsLinesSync();
+      lines.forEach((line) {
         currentLineIndex++;
         ma = re.firstMatch(line);
         if (ma != null) {
@@ -96,6 +93,9 @@ void walkPath(FileSystemEntity path) {
           exp = ma!.group(1);
           if (exp == "default") {
             if (isReplace) {
+              if (currentTempOperations.isNotEmpty &&
+                  !currentTempOperations.first.commented)
+                tempOperations.forEach((ele) => ele.commented = true);
               tempOperations.addAll(currentTempOperations);
               currentTempOperations.clear();
             }
@@ -131,19 +131,18 @@ void walkPath(FileSystemEntity path) {
             }
             tmp.clear();
           } else {
-            if (isReplace) {
-              if (currentTempOperations.isNotEmpty &&
-                  !currentTempOperations.first.commented)
-                tempOperations.forEach((ele) => ele.commented = true);
-              tempOperations.addAll(currentTempOperations);
-              currentTempOperations.clear();
-            }
             if (evaluator.eval(Expression.parse(exp!), _ctx)) {
               // 匹配到
               tmp.clear();
               state = STATE.caching;
             } else {
               state = STATE.notMatch;
+            }
+            if (isReplace) {
+              if (state == STATE.caching)
+                tempOperations.forEach((ele) => ele.commented = true);
+              tempOperations.addAll(currentTempOperations);
+              currentTempOperations.clear();
             }
           }
         } else {
@@ -169,21 +168,20 @@ void walkPath(FileSystemEntity path) {
           operations.forEach((ele) {
             print('${ele.lineNumber} : ${ele.commented}');
           });
-          file!.readAsLines().then((lines) {
-            operations.forEach((operation) {
-              if (operation.commented &&
-                  !lines[operation.lineNumber - 1].startsWith(_commentReg))
-                lines[operation.lineNumber - 1] =
-                    '${' ' * operation.indent}// ${lines[operation.lineNumber - 1].substring(operation.indent)}';
-              else if (!operation.commented &&
-                  lines[operation.lineNumber - 1].startsWith(_commentReg))
-                lines[operation.lineNumber - 1] =
-                    lines[operation.lineNumber - 1].replaceFirst('// ', '');
-            });
-            print(lines.join('\n'));
-            file!.deleteSync();
-            File(path.path).writeAsStringSync(lines.join('\n'), flush: true);
+
+          operations.forEach((operation) {
+            if (operation.commented &&
+                !lines[operation.lineNumber - 1].startsWith(_commentReg))
+              lines[operation.lineNumber - 1] =
+                  '${' ' * operation.indent}// ${lines[operation.lineNumber - 1].substring(operation.indent)}';
+            else if (!operation.commented &&
+                lines[operation.lineNumber - 1].startsWith(_commentReg))
+              lines[operation.lineNumber - 1] =
+                  lines[operation.lineNumber - 1].replaceFirst('// ', '');
           });
+          print(lines.join('\n'));
+          file!.deleteSync();
+          File(path.path).writeAsStringSync(lines.join('\n'), flush: true);
         } else {
           file!.renameSync(path.path + '.bak');
           File(path.path).writeAsStringSync(sb.toString(), flush: true);
