@@ -123,7 +123,9 @@ class ExpressionParser {
     '-': 9,
     '*': 10,
     '/': 10,
-    '%': 10
+    '%': 10,
+    'in': 11,
+    'notIn': 11,
   };
 
   // This function is responsible for gobbling an individual expression,

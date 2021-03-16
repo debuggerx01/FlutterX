@@ -2,6 +2,19 @@ import 'dart:io';
 import 'parse_arguments.dart';
 import 'expressions/expressions.dart';
 
+const FLAVORS = [
+  'test',
+  'tw',
+  'cn',
+];
+
+final _ctx = {
+  'debug': 'debug',
+  'release': 'release',
+  'profile': 'profile',
+  'default': 'default',
+};
+
 String? exp;
 late String mode;
 late String flavor;
@@ -18,6 +31,13 @@ void main(List<String> arguments) {
   var args = parse(arguments);
   mode = args.mode;
   flavor = args.flavor;
+
+  _ctx.addEntries(FLAVORS.map((e) => MapEntry(e, e)));
+
+  _ctx.addAll({
+    'mode': mode,
+    'flavor': flavor,
+  });
 
   var rootDir = Directory('./');
   rootDir.listSync().forEach(walkPath);
@@ -67,8 +87,7 @@ void walkPath(FileSystemEntity path) {
             state = STATE.none;
             tmp.clear();
           } else {
-            if (evaluator.eval(
-                Expression.parse(exp!), {'mode': mode, 'flavor': flavor})) {
+            if (evaluator.eval(Expression.parse(exp!), _ctx)) {
               // 匹配到
               tmp.clear();
               state = STATE.caching;
@@ -90,7 +109,6 @@ void walkPath(FileSystemEntity path) {
       if (modified) {
         file!.renameSync(path.path + '.bak');
         File(path.path).writeAsStringSync(sb.toString(), flush: true);
-        print(sb.toString());
       }
     } catch (e) {
       if (!(e is FileSystemException)) {

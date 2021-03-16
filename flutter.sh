@@ -6,6 +6,12 @@ SCRIPT_DIR=$(dirname "$SCRIPT_ABS")
 # shellcheck disable=SC2005
 DART_EXE=$(command -v dart)
 
+JUST_REPLACE=0
+for i in "$@"
+do
+   [ "$i" == "--replace" ] && JUST_REPLACE=1
+done
+
 if [[ ! -x "$DART_EXE" ]]; then
   echo "Can't find dart executable file !"
   return 1
@@ -30,23 +36,26 @@ fi
 
 ${DART_EXE} "$SCRIPT_DIR"/bin/pre_script.dart "$@"
 
-flutter "$@"
+if [[ "$JUST_REPLACE" == 0 ]]; then
 
-${DART_EXE} "$SCRIPT_DIR"/bin/after_script.dart "$@"
+  flutter "$@"
 
-if [[ -f "./.hooks/after_script.dart" ]]; then
-  ${DART_EXE} ./.hooks/after_script.dart "$@"
+  ${DART_EXE} "$SCRIPT_DIR"/bin/after_script.dart "$@"
+
+  if [[ -f "./.hooks/after_script.dart" ]]; then
+    ${DART_EXE} ./.hooks/after_script.dart "$@"
+  fi
+
+  if [[ -f "./after_script.dart" ]]; then
+    ${DART_EXE} ./after_script.dart "$@"
+  fi
+
+  if [[ -f "./.hooks/after_script.sh" ]]; then
+    ./.hooks/after_script.sh "$@"
+  fi
+
+  if [[ -f "./after_script.sh" ]]; then
+    ./after_script.sh "$@"
+  fi
+
 fi
-
-if [[ -f "./after_script.dart" ]]; then
-  ${DART_EXE} ./after_script.dart "$@"
-fi
-
-if [[ -f "./.hooks/after_script.sh" ]]; then
-  ./.hooks/after_script.sh "$@"
-fi
-
-if [[ -f "./after_script.sh" ]]; then
-  ./after_script.sh "$@"
-fi
-
