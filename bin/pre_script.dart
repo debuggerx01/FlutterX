@@ -142,8 +142,10 @@ void walkPath(FileSystemEntity path) {
               state = STATE.notMatch;
             }
             if (isReplace) {
-              if (state == STATE.caching)
+              if (state == STATE.caching) {
                 tempOperations.forEach((ele) => ele.commented = true);
+                currentTempOperations.forEach((ele) => ele.commented = true);
+              }
               tempOperations.addAll(currentTempOperations);
               currentTempOperations.clear();
             }
