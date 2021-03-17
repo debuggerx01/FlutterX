@@ -14,9 +14,7 @@ done
 
 if [[ ! -x "$DART_EXE" ]]; then
   echo "Can't find dart executable file !"
-  return 1
 fi
-
 
 if [[ -f "./.hooks/pre_script.dart" ]]; then
   ${DART_EXE} ./.hooks/pre_script.dart "$@"
