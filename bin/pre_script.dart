@@ -34,7 +34,7 @@ void main(List<String> arguments) {
   flavor = args.flavor;
   isReplace = args.isReplaceMode;
 
-  if (!FLAVORS.contains(flavor))
+  if (!FLAVORS.contains(flavor) && flavor != 'default')
     throw Exception('Undefined flavor !!!');
 
   _ctx.addEntries(FLAVORS.map((e) => MapEntry(e, e)));
