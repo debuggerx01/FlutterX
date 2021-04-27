@@ -176,7 +176,8 @@ void walkPath(FileSystemEntity path) {
 
           operations.forEach((operation) {
             if (operation.commented &&
-                !lines[operation.lineNumber - 1].startsWith(_commentReg))
+                !lines[operation.lineNumber - 1].startsWith(_commentReg) &&
+                lines[operation.lineNumber - 1].trim().length > 0)
               lines[operation.lineNumber - 1] =
                   '${' ' * operation.indent}// ${lines[operation.lineNumber - 1].substring(operation.indent)}';
             else if (!operation.commented &&
