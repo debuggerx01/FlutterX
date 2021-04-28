@@ -12,6 +12,20 @@ do
    [ "$i" == "--replace" ] && JUST_REPLACE=1
 done
 
+echo Original args is : [ "$@" ]
+ARGS=("$@")
+
+UNSET_NEXT=0
+INDEX=0
+for i in ${ARGS[*]}
+    do
+        [ 1 == $UNSET_NEXT ] && UNSET_NEXT=0 && unset ARGS[$INDEX]
+        [ "--flavor" == "$i" ] && UNSET_NEXT=1 && unset ARGS[$INDEX]
+        ((INDEX++))
+    done
+
+echo Passed args is : [ "${ARGS[*]}" ]
+
 if [[ ! -x "$DART_EXE" ]]; then
   echo "Can't find dart executable file !"
 fi
@@ -36,7 +50,7 @@ ${DART_EXE} "$SCRIPT_DIR"/bin/pre_script.dart "$@"
 
 if [[ "$JUST_REPLACE" == 0 ]]; then
 
-  flutter "$@"
+  flutter ${ARGS[*]}
 
   ${DART_EXE} "$SCRIPT_DIR"/bin/after_script.dart "$@"
 

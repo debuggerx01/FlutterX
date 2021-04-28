@@ -12,19 +12,27 @@ class Args {
 }
 
 Args parse(arguments) {
-  var args = Args('debug', 'default', false);
+  var args = Args('', 'default', false);
   for (var value in arguments) {
     if (value == '--release') {
       args.mode = 'release';
     } else if (value == '--debug') {
       args.mode = 'debug';
     }
+
+    if (args.mode == '' && value == 'build') {
+      args.mode = 'release';
+    }
+
     if (value == '--flavor') {
       args.flavor = arguments[arguments.indexOf('--flavor') + 1];
     }
     if (value == '--replace') {
       args.isReplaceMode = true;
     }
+  }
+  if (args.mode == '') {
+    args.mode = 'debug';
   }
   print(args);
   return args;
