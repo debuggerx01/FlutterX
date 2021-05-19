@@ -79,6 +79,7 @@ void walkPath(FileSystemEntity path) {
     file = File(path.path);
     sb.clear();
     modified = false;
+    state = STATE.none;
     if (isReplace) {
       currentLineIndex = 0;
       operations.clear();
@@ -170,24 +171,20 @@ void walkPath(FileSystemEntity path) {
       });
       if (modified) {
         if (isReplace) {
-          operations.forEach((ele) {
-            print('${ele.lineNumber} : ${ele.commented}');
-          });
-
           operations.forEach((operation) {
             if (operation.commented &&
                 !lines[operation.lineNumber - 1].startsWith(_commentReg) &&
-                lines[operation.lineNumber - 1].trim().length > 0)
+                lines[operation.lineNumber - 1].trim().length > 0) {
               lines[operation.lineNumber - 1] =
                   '${' ' * operation.indent}// ${lines[operation.lineNumber - 1].substring(operation.indent)}';
-            else if (!operation.commented &&
+            } else if (!operation.commented &&
                 lines[operation.lineNumber - 1].startsWith(_commentReg))
               lines[operation.lineNumber - 1] =
                   lines[operation.lineNumber - 1].replaceFirst('// ', '');
           });
-          print(lines.join('\n'));
           file!.deleteSync();
           File(path.path).writeAsStringSync(lines.join('\n'), flush: true);
+          print("${file!.path} modified");
         } else {
           file!.renameSync(path.path + '.bak');
           File(path.path).writeAsStringSync(sb.toString(), flush: true);
