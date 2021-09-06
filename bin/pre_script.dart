@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'path_utils.dart';
 import 'parse_arguments.dart';
 import 'expressions/expressions.dart';
 import 'flavors.dart';
@@ -66,14 +67,17 @@ List<ReplaceOperation> operations = [];
 List<ReplaceOperation> tempOperations = [];
 List<ReplaceOperation> currentTempOperations = [];
 
-final _commentReg = RegExp(' +\/\/');
+final _commentReg = RegExp(' *\/\/');
 
 var lastIndent = -1;
 
 void walkPath(FileSystemEntity path) {
   var stat = path.statSync();
   if (stat.type == FileSystemEntityType.directory) {
-    Directory(path.path).listSync().forEach(walkPath);
+    Directory(path.path)
+        .listSync()
+        .where((f) => !PathUtils.baseName(f).startsWith('.'))
+        .forEach(walkPath);
   } else if (stat.type == FileSystemEntityType.file &&
       BLACK_FILE_EXT.indexWhere((ele) => path.path.endsWith(ele)) < 0) {
     file = File(path.path);
@@ -183,7 +187,8 @@ void walkPath(FileSystemEntity path) {
                   lines[operation.lineNumber - 1].replaceFirst('// ', '');
           });
           file!.deleteSync();
-          File(path.path).writeAsStringSync(lines.join('\n'), flush: true);
+          File(path.path)
+              .writeAsStringSync(lines.join('\n') + '\n', flush: true);
           print("${file!.path} modified");
         } else {
           file!.renameSync(path.path + '.bak');

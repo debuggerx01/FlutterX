@@ -30,25 +30,26 @@ if [[ ! -x "$DART_EXE" ]]; then
   echo "Can't find dart executable file !"
 fi
 
-if [[ -f "./.hooks/pre_script.dart" ]]; then
-  ${DART_EXE} ./.hooks/pre_script.dart "$@"
-fi
-
-if [[ -f "./pre_script.dart" ]]; then
-  ${DART_EXE} ./.hooks/pre_script.dart "$@"
-fi
-
-if [[ -f "./.hooks/pre_script.sh" ]]; then
-  ./.hooks/pre_script.sh "$@"
-fi
-
-if [[ -f "./pre_script.sh" ]]; then
-  ./pre_script.sh "$@"
-fi
-
 ${DART_EXE} "$SCRIPT_DIR"/bin/pre_script.dart "$@"
 
 if [[ "$JUST_REPLACE" == 0 ]]; then
+  if [[ -f "./.hooks/pre_script.dart" ]]; then
+    ${DART_EXE} ./.hooks/pre_script.dart "$@"
+  fi
+
+  if [[ -f "./pre_script.dart" ]]; then
+    ${DART_EXE} ./pre_script.dart "$@"
+  fi
+
+  if [[ -f "./.hooks/pre_script.sh" ]]; then
+    ./.hooks/pre_script.sh "$@"
+  fi
+
+  if [[ -f "./pre_script.sh" ]]; then
+    ./pre_script.sh "$@"
+  fi
+
+  flutter pub get
 
   flutter ${ARGS[*]}
 
